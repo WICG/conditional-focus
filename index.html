@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <title>Conditional Focus</title>
+    <script class="remove" src="conditional-focus.js" type="text/javascript"></script>
+    <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove"></script>
+  </head>
+  <body>
+    <section id="abstract">
+      <h2>Abstract</h2>
+      <p>
+        When an application captures a [=display-surface=], the user agent faces a decision - should
+        the captured [=display-surface=] be brought to the forefront of the user's screen
+        ("focused"), or should the capturing application retain focus. This document proposes a
+        mechanism by which an application can influence this decision.
+      </p>
+    </section>
+    <section id="conformance"></section>
+    <section id="definitions">
+      <h2>Definitions</h2>
+      <p>
+        This document uses the definition of the following concepts from [[SCREEN-CAPTURE]]:
+        <dfn>display-surface</dfn>, <dfn>application</dfn> [=display-surface=],
+        <dfn>browser</dfn> [=display-surface=], <dfn>window</dfn> [=display-surface=] and
+        <dfn>monitor</dfn> [=display-surface=].
+      </p>
+    </section>
+    <section id="problem-desc">
+      <h2>Problem Description</h2>
+      <p>
+        Assume a Web-application that calls {{MediaDevices/getDisplayMedia()}} and the user chooses
+        to capture a tab or a window. It is not currently specified whether the user agent should
+        focus the captured [=display-surface=], or let the capturing application retrain focus.
+      </p>
+      <p>
+        The user agent is mostly agnostic of the nature of the capturing and captured applications,
+        and is therefore not well-positioned to make an informed decision with regards to focus.
+      </p>
+      <p>
+        In contrast, the capturing application is familiar with its own properties, and is better
+        positioned to make this decision. Moreover, by reading
+        {{MediaTrackConstraintSet/displaySurface}} and/or using
+        <a href="https://wicg.github.io/capture-handle/">Capture Handle</a>, the capturing
+        application can learn about the captured [=display-surface=], driving an even more informed
+        decision.
+      </p>
+      <p>For example, a video conferencing application may wish to:</p>
+      <ul>
+        <li>Hand-off focus to interactive captured applications, like text editors.</li>
+        <li>Retain focus when capturing less interactive applications, like video players.</li>
+      </ul>
+    </section>
+    <section id="conditional-focus-mechanism">
+      <h2>The Conditional-Focus Mechanism</h2>
+      <p>
+        The conditional-focus mechanism allows the capturing application to instruct the user agent
+        to either switch focus to the captured [=display-surface=], or to avoid such a focus change.
+      </p>
+      <p>
+        The window of opportunity for the application to make the decision is defined. If the
+        mechanism is not invoked within this window of opportunity, the user agent takes over and
+        makes its own decision.
+      </p>
+      <section id="getdisplaymedia-extensions">
+        <h2>getDisplayMedia() Extensions</h2>
+        <p>
+          {{MediaDevices/getDisplayMedia()}} is currently defined such that it returns a
+          {{Promise}}&lt;{{MediaStream}}&gt;. We extend this definition such that when
+          {{MediaDevices/getDisplayMedia()}} is called, if the user elects to capture either an
+          [=application=], [=browser=] or [=window=] [=display-surface=], the video track of the
+          aforementioned {{MediaStream}} will be of type {{FocusableMediaStreamTrack}}.
+        </p>
+      </section>
+      <section id="focusable-media-stream-track">
+        <h2><dfn>FocusableMediaStreamTrack</dfn></h2>
+        <p>{{MediaStreamTrack}} is subclassed as {{FocusableMediaStreamTrack}}.</p>
+        <pre class="idl">
+          [Exposed=Window]
+          interface FocusableMediaStreamTrack : MediaStreamTrack {
+            undefined focus(CaptureStartFocusBehavior focus_behavior);
+            MediaStreamTrack clone();
+          };
+
+          enum CaptureStartFocusBehavior {
+            "focus-captured-surface",
+            "no-focus-change"
+          };
+        </pre>
+        <dl data-link-for="FocusableMediaStreamTrack" data-dfn-for="FocusableMediaStreamTrack">
+          <dt>
+            <dfn>focus()</dfn>
+          </dt>
+          <dd>
+            <p>
+              Recall that the {{FocusableMediaStreamTrack}} object was instantiated in response to a
+              call to {{MediaDevices/getDisplayMedia()}}. That call to
+              {{MediaDevices/getDisplayMedia()}} returned a {{Promise}}&lt;{{MediaStream}}&gt;, and
+              that {{Promise}} was resolved on a microtask, which we will name <code>MT</code>.
+            </p>
+            <p>
+              When the {{focus()}} method is called, the user agent MUST run the following steps:
+            </p>
+            <ol>
+              <li>
+                If {{focus()}} was previously called on this object, raise an {{InvalidStateError}}.
+                Otherwise, proceed.
+              </li>
+              <li>
+                If {{focus()}} was not called on <code>MT</code>, raise an {{InvalidStateError}}.
+                Otherwise, proceed.
+              </li>
+              <li>
+                If this call to {{focus()}} happens more than one second after the start of the
+                capture, the user agent SHOULD have already made its own decision. The user agent
+                SHOULD silently ignore this call {{focus()}}.
+              </li>
+              <li>
+                This call to {{focus()}} occurred on <code>MT</code> and within one second of the
+                capture starting. Therefore, the user agent MUST NOT make its own decision with
+                respect to focusing the captured [=display-surface=], but rather:
+                <ul>
+                  <li>
+                    If <code>focus_behavior</code> is set to
+                    {{CaptureStartFocusBehavior/"focus-captured-surface"}}, then the user agent MUST
+                    focus the captured [=display-surface=].
+                  </li>
+                  <li>
+                    If <code>focus_behavior</code> is set to
+                    {{CaptureStartFocusBehavior/"no-focus-change"}}, then the user agent MUST NOT
+                    focus the captured [=display-surface=].
+                  </li>
+                </ul>
+              </li>
+            </ol>
+          </dd>
+          <dt>
+            <dfn>clone()</dfn>
+          </dt>
+          <dd>
+            Calls to {{clone()}} MUST return an object of type {{MediaStreamTrack}}, thereby stripping
+            away the ability to call {{focus()}} on a cloned track.
+          </dd>
+        </dl>
+      </section>
+    </section>
+  </body>
+</html>
