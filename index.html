@@ -79,7 +79,6 @@
           [Exposed=Window]
           interface FocusableMediaStreamTrack : MediaStreamTrack {
             undefined focus(CaptureStartFocusBehavior focus_behavior);
-            MediaStreamTrack clone();
           };
 
           enum CaptureStartFocusBehavior {
@@ -102,6 +101,10 @@
               When the {{focus()}} method is called, the user agent MUST run the following steps:
             </p>
             <ol>
+              <li>
+                If this object is a clone, raise an {{InvalidStateError}}.
+                Otherwise, proceed.
+              </li>
               <li>
                 If {{focus()}} was previously called on this object, raise an {{InvalidStateError}}.
                 Otherwise, proceed.
@@ -133,13 +136,6 @@
                 </ul>
               </li>
             </ol>
-          </dd>
-          <dt>
-            <dfn>clone()</dfn>
-          </dt>
-          <dd>
-            Calls to {{clone()}} MUST return an object of type {{MediaStreamTrack}}, thereby stripping
-            away the ability to call {{focus()}} on a cloned track.
           </dd>
         </dl>
       </section>
