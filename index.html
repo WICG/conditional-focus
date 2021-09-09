@@ -98,12 +98,12 @@
               that {{Promise}} was resolved on a microtask, which we will name <code>MT</code>.
             </p>
             <p>
-              When the {{focus()}} method is called, the user agent MUST run the following steps:
+              When the {{focus()}} method is called on an object <code>FMST</code>, the user agent
+              MUST run the following steps:
             </p>
             <ol>
               <li>
-                If this object is a clone, raise an {{InvalidStateError}}.
-                Otherwise, proceed.
+                If <code>FMST</code> is a clone, raise an {{InvalidStateError}}. Otherwise, proceed.
               </li>
               <li>
                 If {{focus()}} was previously called on this object, raise an {{InvalidStateError}}.
