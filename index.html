@@ -155,6 +155,55 @@
           </dd>
         </dl>
       </section>
+      <section id="usage-samples">
+        <h2>Usage Samples</h2>
+        <p>
+          All examples will assume a predicate named <code>shouldFocus()</code> which accepts a
+          video {{MediaStreamTrack}} as input. It is a synchronous function returning either
+          {{CaptureStartFocusBehavior/"no-focus-change"}} or
+          {{CaptureStartFocusBehavior/"focus-captured-surface"}}. Reasonable implementations of this
+          predicate include:
+        </p>
+        <ul>
+          <li>Hard-code to always focus.</li>
+          <li>Hard-code to never focus.</li>
+          <li>Base the decision on a user preference obtain in-app.</li>
+          <li>
+            Base the decision on the captured [=display-surface=]'s {{DisplayCaptureSurfaceType}}.
+          </li>
+          <li>Base the decision on the captured application (using Capture Handle).</li>
+        </ul>
+        <section>
+          <h3>Correct Usage Sample</h3>
+          <pre class="example" title="Correct Usage Sample">
+            const mediaStream = await navigator.mediaDevices.getDisplayMedia();
+            const [track] = mediaStream.getVideoTracks();
+            track.focus(shouldFocus(track));  // Correct.
+          </pre>
+        </section>
+        <section id="incorrect-usage-samples">
+          <h3>Incorrect Usage Samples</h3>
+          <pre class="example" title='Incorrect Usage Sample: Task hopping with "await"'>
+              const mediaStream = await navigator.mediaDevices.getDisplayMedia();
+              const [track] = mediaStream.getVideoTracks();
+              await someOtherFunction();  // Mistake: Allows MT to finish its execution.
+              track.focus(shouldFocus(track));
+          </pre>
+          <pre class="example" title="Incorrect Usage Sample: Task hopping with setTimeout">
+              const mediaStream = await navigator.mediaDevices.getDisplayMedia();
+              const [track] = mediaStream.getVideoTracks();
+              setTimeout(() => {  // Mistake: Allows MT to finish its execution.
+                track.focus(shouldFocus(track));
+              }, 1);
+          </pre>
+          <pre class="example" title="Incorrect Usage Sample: Delaying on MT">
+              const mediaStream = await navigator.mediaDevices.getDisplayMedia();
+              const [track] = mediaStream.getVideoTracks();
+              timeConsumingFunc();  // Mistake: Might take longer than 1s.
+              track.focus(shouldFocus(track));
+          </pre>
+        </section>
+      </section>
     </section>
   </body>
 </html>
