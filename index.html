@@ -94,29 +94,45 @@
             <p>
               Recall that the {{FocusableMediaStreamTrack}} object was instantiated in response to a
               call to {{MediaDevices/getDisplayMedia()}}. That call to
-              {{MediaDevices/getDisplayMedia()}} returned a {{Promise}}&lt;{{MediaStream}}&gt;, and
-              that {{Promise}} was resolved on a microtask, which we will name <code>MT</code>.
+              {{MediaDevices/getDisplayMedia()}} returned a {{Promise}}&lt;{{MediaStream}}&gt;
+              <code>PRMS</code>. Like any {{Promise}}, <code>PRMS</code> is settled on a microtask,
+              which we will name <code>MT</code>.
             </p>
             <p>
-              When the {{focus()}} method is called, the user agent MUST run the following steps:
+              When <code>MT</code> starts executing, a window of opportunity opens for the
+              application to inform the user agent as to whether it wants the captured
+              [=display-surface=] to be focused or not. Calls to {{focus()}} may only have an effect
+              while this window of opportunity is open. It closes as soon as one of the following
+              happens:
+            </p>
+            <ul>
+              <li>{{focus()}} is called for the first time.</li>
+              <li><code>MT</code> finishes.</li>
+              <li>One second passes since the capture was started.</li>
+            </ul>
+            <p>
+              When the window of opportunity closes, if an explicit decision was not made through
+              calling {{focus()}}, then the user agent MUST make its own decision.
+            </p>
+            <p>
+              Therefore, when {{focus()}} is called, the user agent MUST run the following steps:
             </p>
             <ol>
               <li>
-                If this object is a clone, raise an {{InvalidStateError}}.
+                If this object is a clone, raise an {{InvalidStateError}}. Otherwise, proceed.
+              </li>
+              <li>
+                If {{focus()}} was previously called on [=this=], raise an {{InvalidStateError}}.
                 Otherwise, proceed.
               </li>
               <li>
-                If {{focus()}} was previously called on this object, raise an {{InvalidStateError}}.
-                Otherwise, proceed.
+                If this call to {{focus()}} is not on <code>MT</code>, the user agent MUST have
+                already made a decision, so raise an {{InvalidStateError}}. Otherwise, proceed.
               </li>
               <li>
-                If {{focus()}} was not called on <code>MT</code>, raise an {{InvalidStateError}}.
-                Otherwise, proceed.
-              </li>
-              <li>
-                If this call to {{focus()}} happens more than one second after the start of the
-                capture, the user agent SHOULD have already made its own decision. The user agent
-                SHOULD silently ignore this call {{focus()}}.
+                If this call to {{focus()}} occurs more than one second after the start of the
+                capture, the user agent MUST have already made a decision. The user agent MUST
+                silently ignore this call {{focus()}}.
               </li>
               <li>
                 This call to {{focus()}} occurred on <code>MT</code> and within one second of the
