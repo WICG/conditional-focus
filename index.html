@@ -178,7 +178,9 @@
           <pre class="example" title="Correct Usage Sample">
             const mediaStream = await navigator.mediaDevices.getDisplayMedia();
             const [track] = mediaStream.getVideoTracks();
-            track.focus(shouldFocus(track));  // Correct.
+            if (!!track.focus) {
+              track.focus(shouldFocus(track));  // Correct.
+            }
           </pre>
         </section>
         <section id="incorrect-usage-samples">
@@ -187,20 +189,26 @@
               const mediaStream = await navigator.mediaDevices.getDisplayMedia();
               const [track] = mediaStream.getVideoTracks();
               await someOtherFunction();  // Mistake: Allows MT to finish its execution.
-              track.focus(shouldFocus(track));
+              if (!!track.focus) {
+                track.focus(shouldFocus(track));
+              }
           </pre>
           <pre class="example" title="Incorrect Usage Sample: Task hopping with setTimeout">
               const mediaStream = await navigator.mediaDevices.getDisplayMedia();
               const [track] = mediaStream.getVideoTracks();
               setTimeout(() => {  // Mistake: Allows MT to finish its execution.
-                track.focus(shouldFocus(track));
+                if (!!track.focus) {
+                  track.focus(shouldFocus(track));
+                }
               }, 1);
           </pre>
           <pre class="example" title="Incorrect Usage Sample: Delaying on MT">
               const mediaStream = await navigator.mediaDevices.getDisplayMedia();
               const [track] = mediaStream.getVideoTracks();
               timeConsumingFunc();  // Mistake: Might take longer than 1s.
-              track.focus(shouldFocus(track));
+              if (!!track.focus) {
+                track.focus(shouldFocus(track));
+              }
           </pre>
         </section>
       </section>
