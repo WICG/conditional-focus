@@ -20,9 +20,21 @@ For **example**, a video conferencing application **may** wish to:
 
 ## Sample Code
 ```
+//////////////////////////////////
+// Pre-existing, unchanged API: //
+//////////////////////////////////
 const stream = await navigator.mediaDevices.getDisplayMedia();
-track.focus(ShouldFocus(stream) ? "focus-captured-surface" : "no-focus-change")
 
+/////////////////////
+// New API in use: //
+/////////////////////
+if (!!track.focus) {
+  track.focus(ShouldFocus(stream) ? "focus-captured-surface" : "no-focus-change")
+}
+
+//////////////////////////////////////////////////////
+// Possible logic to drive the call to the new API: //
+//////////////////////////////////////////////////////
 function ShouldFocus(stream) {
   const [track] = stream.getVideoTracks();
   if (sampleUsesCaptureHandle) {
