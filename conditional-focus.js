@@ -2,7 +2,7 @@ var respecConfig = {
   group: "webrtc",
   specStatus: "unofficial",
   github: {
-    repoURL: "https://github.com/eladalon1983/conditional-focus/",
+    repoURL: "https://github.com/WICG/conditional-focus/",
     branch: "master",
   },
   editors: [
