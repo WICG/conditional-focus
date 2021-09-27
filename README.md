@@ -19,7 +19,7 @@ For **example**, a video conferencing application **may** wish to:
 * A [demo](https://eladalon1983.github.io/conditional-focus/demo/) is available. It works with Chrome m95 and up.
 
 ## Sample Code
-```
+```js
 //////////////////////////////////
 // Pre-existing, unchanged API: //
 //////////////////////////////////
