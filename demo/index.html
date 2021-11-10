@@ -52,9 +52,9 @@
       <video id="video" autoplay style="display: none; border: solid; width: 50%"></video>
     </div>
     <div id="prerequisites" style="display: none; padding: 1%">
-      <li>Make sure you're running Chrome m95 or later.</li>
+      <li>Make sure you're running Chrome m96 or later.</li>
       <li>
-        If you're seeing this despite using Chrome m95 or later, the Origin Trial on this demo might
+        If you're seeing this despite using Chrome m96 or later, the Origin Trial on this demo might
         have expired. In that case, either [Experimental Web Platform features] or launch the
         browser with --enable-blink-features=ConditionalFocus.
       </li>
@@ -90,7 +90,7 @@
     <script>
       const chromeVersionFits =
         navigator.userAgent.includes("Chrome/") &&
-        navigator.userAgent.split("Chrome/")[1].split(".")[0] >= 95;
+        navigator.userAgent.split("Chrome/")[1].split(".")[0] >= 96;
 
       const video = document.getElementById("video");
       const prerequisites = document.getElementById("prerequisites");
