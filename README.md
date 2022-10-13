@@ -71,6 +71,7 @@ if (track.getSettings().displaySurface == "browser" &&
 } else {
   controller.setFocusBehavior("focus-captured-surface");
 }
+```
 
 ## Limitations
 
@@ -119,4 +120,3 @@ setTimeout(() => {
   controller.setFocusBehavior("focus-captured-surface");
 });
 ```
-
