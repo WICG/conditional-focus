@@ -71,3 +71,52 @@ if (track.getSettings().displaySurface == "browser" &&
 } else {
   controller.setFocusBehavior("focus-captured-surface");
 }
+
+## Limitations
+
+If the API were not limited, capturing applications could have used it to focus the captured application at an arbitrary moment. That would have presented severe security problems; for example, a malicious application could have tricked the user into double-clicking at an arbitrary point, then focused the captured tab/window in between the two clicks, and thereby produced a click in the captured app in a point of its choosing.
+
+To prevent such issues, there is a limited window of opportunity to call `setFocusBehavior()` once capture starts. This window closes with the earlier of the following:
+1. After a second.
+2. One task after the `getDisplayMedia()` promise resolves. (More accurately, a task is queued before resolving the promise, and once it executes, the window closes.)
+
+The following two examples would therefore not work:
+
+```js
+// INCORRECT USAGE #1.
+
+const controller = new CaptureController;
+const stream = await navigator.mediaDevices.getDisplayMedia({
+  video: true,
+  controller: controller
+});
+
+const start = new Date();
+while (new Date() - start <= 1000) {
+  ;  // Idle for 1s + epsilon.
+}
+
+// Because too much time has elapsed,
+// the browser will have already made a decision
+// as to whether to focus or not, and the window
+// of opportunity is now closed.
+controller.setFocusBehavior("focus-captured-surface");
+```
+
+```js
+// INCORRECT USAGE #2.
+
+const controller = new CaptureController;
+const stream = await navigator.mediaDevices.getDisplayMedia({
+  video: true,
+  controller: controller
+});
+
+// This task will be queued behind the the task
+// that closes the window of opportunity to
+// call setFocusBehavior().
+setTimeout(() => {
+  controller.setFocusBehavior("focus-captured-surface");
+});
+```
+
