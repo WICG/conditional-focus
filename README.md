@@ -42,11 +42,12 @@ const stream = await navigator.mediaDevices.getDisplayMedia({
   controller: controller
 });
 
+// Focus tabs; avoid focusing windows.
 const [track] = stream.getVideoTracks();
 const surfaceType = track.getSettings().displaySurface;
-if (surfaceType == "browser") {  // Focus tabs.
+if (surfaceType == "browser") {
   controller.setFocusBehavior("focus-captured-surface");
-} else if (surfaceType == "window") {  // Avoid focusing windows.
+} else if (surfaceType == "window") {
   controller.setFocusBehavior("no-focus-change");
 }
 ```
@@ -62,8 +63,8 @@ const stream = await navigator.mediaDevices.getDisplayMedia({
   controller: controller
 });
 
-const [track] = stream.getVideoTracks();
 // Focus anything other than tabs dialed in to some specific URL.
+const [track] = stream.getVideoTracks();
 if (track.getSettings().displaySurface == "browser" &&
     track.getCaptureHandle().origin == "https://some.specific.url") {
   controller.setFocusBehavior("no-focus-change");
