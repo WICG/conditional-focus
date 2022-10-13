@@ -13,41 +13,60 @@ For **example**, a video conferencing application **may** wish to:
 * Retain for itself focus when the captured display-surface is non-interactive content, like a video.
   * (Using [Capture Handle](https://wicg.github.io/capture-handle/), the capturing application may even allow the user to remotely start/pause the video.)
 
-## Suggested Solution and Demo
-* See [spec-draft](https://eladalon1983.github.io/conditional-focus/index.html) for a suggested solution for this issue.
-* This solution is implemented in Chrome starting with m95. It is gated by `--enable-blink-features=ConditionalFocus`. (Or enable `Experimental Web Platform features` on chrome://flags.)
-* A [demo](https://eladalon1983.github.io/conditional-focus/demo/) is available. It works with Chrome m95 and up.
+## Solution
+Before calling `getDisplayMedia()`, apps can now produce a `CaptureController` object, and pass it in as an additional dictionary key-value pair.
 
-## Sample Code
+By calling `setFocusBehavior()` on the controller, apps can now control whether the captured display surface will be focused or not.
+
+It is possible to call `setFocusBehavior()` arbitrarily many times before calling `getDisplayMedia()`. Only the last invocation will have an effect.
+
 ```js
-//////////////////////////////////
-// Pre-existing, unchanged API: //
-//////////////////////////////////
-const stream = await navigator.mediaDevices.getDisplayMedia();
+// Example #1 - unconditional decision.
 
-/////////////////////
-// New API in use: //
-/////////////////////
-if (!!track.focus) {
-  track.focus(ShouldFocus(stream) ? "focus-captured-surface" : "no-focus-change")
-}
+const controller = new CaptureController;
+controller.setFocusBehavior("focus-captured-surface");
+const stream = await navigator.mediaDevices.getDisplayMedia({
+  video: true,
+  controller: controller
+});
+```
 
-//////////////////////////////////////////////////////
-// Possible logic to drive the call to the new API: //
-//////////////////////////////////////////////////////
-function ShouldFocus(stream) {
-  const [track] = stream.getVideoTracks();
-  if (sampleUsesCaptureHandle) {
-    // Assume logic discriminating focusability by origin,
-    // for instance focusing anything except https://collaborator.com.
-    const captureHandle = track.getCaptureHandle();
-    return ShouldFocusOrigin(captureHandle && captureHandle.origin);
-  } else {  // Assume Capture Handle is not a thing.
-    // Assume the application is only interested in focusing tabs, not windows.
-    return track.getSettings().displaySurface == 'browser';
-  }
+It is also possible to call `setFocusBehavior()` immediately after `getDisplayMedia()`'s promise resolves. This can be done at most once, immediately, or not at all. Naturally, this last invocation also overrides any previous invocations.
+
+```js
+// Example #2 - conditional decision.
+
+const controller = new CaptureController;
+const stream = await navigator.mediaDevices.getDisplayMedia({
+  video: true,
+  controller: controller
+});
+
+const [track] = stream.getVideoTracks();
+const surfaceType = track.getSettings().displaySurface;
+if (surfaceType == "browser") {  // Focus tabs.
+  controller.setFocusBehavior("focus-captured-surface");
+} else if (surfaceType == "window") {  // Avoid focusing windows.
+  controller.setFocusBehavior("no-focus-change");
 }
 ```
 
-## Security Concerns
-One noteworthy security concerns is that allowing switching focus at an arbitrary moment could allow clickjacking attacks. The [suggested spec](https://eladalon1983.github.io/conditional-focus/index.html) addresses this concern by limiting the time when focus-switching may be triggered/suppressed - the application may only decide about focus immediately[\*] upon the resolution of the `Promise<MediaStream>`. (See the [spec-draft](https://eladalon1983.github.io/conditional-focus/index.html) for more details about what "immediately" means and how I suggest various edge-cases be handled.)
+It is possible to make interesting decisions based on the captured content's Capture Handle.
+
+```js
+// Example #3 - conditional decision using Capture Handle.
+
+const controller = new CaptureController;
+const stream = await navigator.mediaDevices.getDisplayMedia({
+  video: true,
+  controller: controller
+});
+
+const [track] = stream.getVideoTracks();
+// Focus anything other than tabs dialed in to some specific URL.
+if (track.getSettings().displaySurface == "browser" &&
+    track.getCaptureHandle().origin == "https://some.specific.url") {
+  controller.setFocusBehavior("no-focus-change");
+} else {
+  controller.setFocusBehavior("focus-captured-surface");
+}
