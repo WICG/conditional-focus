@@ -23,12 +23,9 @@ It is possible to call `setFocusBehavior()` arbitrarily many times before callin
 ```js
 // Example #1 - unconditional decision.
 
-const controller = new CaptureController;
+const controller = new CaptureController();
 controller.setFocusBehavior("focus-captured-surface");
-const stream = await navigator.mediaDevices.getDisplayMedia({
-  video: true,
-  controller: controller
-});
+const stream = await navigator.mediaDevices.getDisplayMedia({ controller });
 ```
 
 It is also possible to call `setFocusBehavior()` immediately after `getDisplayMedia()`'s promise resolves. This can be done at most once, immediately, or not at all. Naturally, this last invocation also overrides any previous invocations.
@@ -36,11 +33,8 @@ It is also possible to call `setFocusBehavior()` immediately after `getDisplayMe
 ```js
 // Example #2 - conditional decision.
 
-const controller = new CaptureController;
-const stream = await navigator.mediaDevices.getDisplayMedia({
-  video: true,
-  controller: controller
-});
+const controller = new CaptureController();
+const stream = await navigator.mediaDevices.getDisplayMedia({ controller });
 
 // Focus tabs; avoid focusing windows.
 const [track] = stream.getVideoTracks();
@@ -57,11 +51,8 @@ It is possible to make interesting decisions based on the captured content's Cap
 ```js
 // Example #3 - conditional decision using Capture Handle.
 
-const controller = new CaptureController;
-const stream = await navigator.mediaDevices.getDisplayMedia({
-  video: true,
-  controller: controller
-});
+const controller = new CaptureController();
+const stream = await navigator.mediaDevices.getDisplayMedia({ controller });
 
 // Focus anything other than tabs dialed in to some specific URL.
 const [track] = stream.getVideoTracks();
@@ -86,11 +77,8 @@ The following two examples would therefore not work:
 ```js
 // INCORRECT USAGE #1.
 
-const controller = new CaptureController;
-const stream = await navigator.mediaDevices.getDisplayMedia({
-  video: true,
-  controller: controller
-});
+const controller = new CaptureController();
+const stream = await navigator.mediaDevices.getDisplayMedia({ controller });
 
 const start = new Date();
 while (new Date() - start <= 1000) {
@@ -107,16 +95,13 @@ controller.setFocusBehavior("focus-captured-surface");
 ```js
 // INCORRECT USAGE #2.
 
-const controller = new CaptureController;
-const stream = await navigator.mediaDevices.getDisplayMedia({
-  video: true,
-  controller: controller
-});
+const controller = new CaptureController();
+const stream = await navigator.mediaDevices.getDisplayMedia({ controller });
 
 // This task will be queued behind the the task
 // that closes the window of opportunity to
 // call setFocusBehavior().
 setTimeout(() => {
   controller.setFocusBehavior("focus-captured-surface");
-});
+}, 0);
 ```
