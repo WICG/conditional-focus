@@ -23,7 +23,7 @@ It is possible to call `setFocusBehavior()` arbitrarily many times before callin
 ```js
 // Example #1 - unconditional decision.
 
-const controller = new CaptureController;
+const controller = new CaptureController();
 controller.setFocusBehavior("focus-captured-surface");
 const stream = await navigator.mediaDevices.getDisplayMedia({
   video: true,
@@ -36,7 +36,7 @@ It is also possible to call `setFocusBehavior()` immediately after `getDisplayMe
 ```js
 // Example #2 - conditional decision.
 
-const controller = new CaptureController;
+const controller = new CaptureController();
 const stream = await navigator.mediaDevices.getDisplayMedia({
   video: true,
   controller: controller
@@ -57,7 +57,7 @@ It is possible to make interesting decisions based on the captured content's Cap
 ```js
 // Example #3 - conditional decision using Capture Handle.
 
-const controller = new CaptureController;
+const controller = new CaptureController();
 const stream = await navigator.mediaDevices.getDisplayMedia({
   video: true,
   controller: controller
@@ -86,7 +86,7 @@ The following two examples would therefore not work:
 ```js
 // INCORRECT USAGE #1.
 
-const controller = new CaptureController;
+const controller = new CaptureController();
 const stream = await navigator.mediaDevices.getDisplayMedia({
   video: true,
   controller: controller
@@ -107,7 +107,7 @@ controller.setFocusBehavior("focus-captured-surface");
 ```js
 // INCORRECT USAGE #2.
 
-const controller = new CaptureController;
+const controller = new CaptureController();
 const stream = await navigator.mediaDevices.getDisplayMedia({
   video: true,
   controller: controller
