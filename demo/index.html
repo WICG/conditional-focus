@@ -1,12 +1,6 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <!-- TODO: Set up firing another tab and making it expose whether it should be focused or not. -->
-    <!-- Capture-Handle token - allows us to examine the captured tab and decide whether it should be focused. -->
-    <meta
-      http-equiv="origin-trial"
-      content="AuqKrDGfIJmjwQm2I2rBfVjTjuChSBCSXmr3qwnKA9dW5pVpWBCZVGSYZ7BPwplh/w7pa5Wf8wdI2k7omlfzYgkAAABreyJvcmlnaW4iOiJodHRwczovL3dpY2cuZ2l0aHViLmlvOjQ0MyIsImZlYXR1cmUiOiJDb25kaXRpb25hbEZvY3VzIiwiZXhwaXJ5IjoxNjQ3OTkzNTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZX0="
-    />
     <meta name="mobile-web-app-capable" content="no" />
     <style>
       button {
@@ -49,17 +43,9 @@
   <body>
     <h1 style="text-align: center">Conditional Focus Demo</h1>
     <div class="centerAligned">
-      <video id="video" autoplay style="display: none; border: solid; width: 50%"></video>
+      <video id="video" autoplay style="border: solid; width: 50%"></video>
     </div>
-    <div id="prerequisites" style="display: none; padding: 1%">
-      <li>Make sure you're running Chrome m96 or later.</li>
-      <li>
-        If you're seeing this despite using Chrome m96 or later, the Origin Trial on this demo might
-        have expired. In that case, either [Experimental Web Platform features] or launch the
-        browser with --enable-blink-features=ConditionalFocus.
-      </li>
-    </div>
-    <div id="controls" style="text-align: center; display: none">
+    <div style="text-align: center">
       <button
         id="captureAndFocusButton"
         onclick="onCaptureButtonClicked(true);"
@@ -88,27 +74,9 @@
       </div>
     </div>
     <script>
-      const chromeVersionFits =
-        navigator.userAgent.includes("Chrome/") &&
-        navigator.userAgent.split("Chrome/")[1].split(".")[0] >= 96;
-
       const video = document.getElementById("video");
-      const prerequisites = document.getElementById("prerequisites");
-      const controls = document.getElementById("controls");
       const unfocusable_warning = document.getElementById("unfocusable_warning");
-
-      const focusableSurfaces = ["browser", "window"];
-
-      const newApiShape =
-        "CaptureController" in window && !!new CaptureController().setFocusBehavior;
-      let controller;
-
-      if (chromeVersionFits) {
-        controls.style.display = "";
-        video.style.display = "";
-      } else {
-        prerequisites.style.display = "";
-      }
+      let stream; // Prevents garbage collection of the stream.
 
       function reset() {
         unfocusable_warning.style.display = "none";
@@ -120,46 +88,27 @@
         }
       }
 
-      function canSetFocus(track) {
-        if (!focusableSurfaces.includes(track.getSettings().displaySurface)) {
-          return false; // Redundant given the UX treatmet, but for completeness.
-        }
-        return newApiShape || !!track.focus;
-      }
-
-      function setFocus(controller, track, focusValue) {
-        if (newApiShape) {
-          controller.setFocusBehavior(focusValue);
-        } else {
-          track.focus(focusValue);
-        }
-      }
-
       async function onCaptureButtonClicked(shouldFocus) {
         reset();
 
-        let stream;
         try {
-          const constraints = { video: true, controller: controller };
-          if (newApiShape) {
-            controller = new CaptureController();
-            constraints = { ...constraints, controller };
-          }
-          stream = await navigator.mediaDevices.getDisplayMedia(constraints);
-          let [track] = stream.getVideoTracks();
+          const controller = new CaptureController();
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: true,
+            controller,
+          });
+          const [track] = stream.getVideoTracks();
 
+          const focusableSurfaces = ["browser", "window"];
           if (!focusableSurfaces.includes(track.getSettings().displaySurface)) {
             unfocusable_warning.style.display = "";
             video.style.display = "none";
             track.stop();
             return;
-          } else if (!canSetFocus(track)) {
-            video.style.display = "none";
-            controls.style.display = "none";
-            prerequisites.style.display = "";
-          } else {
-            setFocus(controller, track, shouldFocus ? "focus-captured-surface" : "no-focus-change");
           }
+
+          controller.setFocusBehavior(shouldFocus ? "focus-captured-surface" : "no-focus-change");
         } catch (error) {
           console.error(error);
           return;
