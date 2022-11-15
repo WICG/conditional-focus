@@ -140,7 +140,7 @@
 
         let stream;
         try {
-          constraints = { video: true, controller: controller };
+          const constraints = { video: true, controller: controller };
           if (newApiShape) {
             controller = new CaptureController();
             constraints = { ...constraints, controller };
