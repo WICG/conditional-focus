@@ -82,8 +82,8 @@
       </div>
       <div id="unfocusable_warning" style="display: none; padding: 1%">
         <p>
-          Only tabs and windows are focusable. You seem to have chosen to share a screen. This option
-          won't do much in the context of this demo. Please try a tab or a window instead.
+          Only tabs and windows are focusable. You seem to have chosen to share a screen. This
+          option won't do much in the context of this demo. Please try a tab or a window instead.
         </p>
       </div>
     </div>
@@ -96,6 +96,12 @@
       const prerequisites = document.getElementById("prerequisites");
       const controls = document.getElementById("controls");
       const unfocusable_warning = document.getElementById("unfocusable_warning");
+
+      const focusableSurfaces = ["browser", "window"];
+
+      const newApiShape =
+        "CaptureController" in window && !!new CaptureController().setFocusBehavior;
+      let controller;
 
       if (chromeVersionFits) {
         controls.style.display = "";
@@ -114,27 +120,48 @@
         }
       }
 
+      function canSetFocus(track) {
+        if (!focusableSurfaces.includes(track.getSettings().displaySurface)) {
+          return false; // Redundant given the UX treatmet, but for completeness.
+        }
+        return newApiShape || !!track.focus;
+      }
+
+      function setFocus(controller, track, focusValue) {
+        if (newApiShape) {
+          controller.setFocusBehavior(focusValue);
+        } else {
+          track.focus(focusValue);
+        }
+      }
+
       async function onCaptureButtonClicked(shouldFocus) {
         reset();
 
         let stream;
         try {
-          stream = await navigator.mediaDevices.getDisplayMedia();
+          constraints = { video: true, controller: controller };
+          if (newApiShape) {
+            controller = new CaptureController();
+            constraints = { ...constraints, controller };
+          }
+          stream = await navigator.mediaDevices.getDisplayMedia(constraints);
           let [track] = stream.getVideoTracks();
-          const focusableSurfaces = ["browser", "window"];
+
           if (!focusableSurfaces.includes(track.getSettings().displaySurface)) {
             unfocusable_warning.style.display = "";
             video.style.display = "none";
             track.stop();
             return;
-          } else if (!track.focus) {
+          } else if (!canSetFocus(track)) {
             video.style.display = "none";
             controls.style.display = "none";
             prerequisites.style.display = "";
           } else {
-            track.focus(shouldFocus ? "focus-captured-surface" : "no-focus-change");
+            setFocus(controller, track, shouldFocus ? "focus-captured-surface" : "no-focus-change");
           }
         } catch (error) {
+          console.error(error);
           return;
         }
 
