@@ -1,39 +1,41 @@
-async function getDisplayMedia(shouldFocus) {
+async function getDisplayMedia(focusTabs, focusWindows) {
   const controller = new CaptureController();
   const options = {
     selfBrowserSurface: "exclude", // Exclude the current tab from the list of tabs offered to the user.
     controller: controller,
   };
-  log("Prompt user to share contents of the screen...");
+
+  log("Prompting the user to choose what to share.");
   const stream = await navigator.mediaDevices.getDisplayMedia(options);
   document.querySelector("video").srcObject = stream;
   const [track] = stream.getVideoTracks();
-  if (shouldFocus(track)) {
-    log("> Success! The captured surface was focused.");
-    controller.setFocusBehavior("focus-captured-surface");
+  const surface = track.getSettings().displaySurface;
+
+  let focusBehavior;
+  if (surface == "browser") {
+    focusBehavior = focusTabs ? "focus-captured-surface" : "no-focus-change";
+  } else if (surface == "window") {
+    focusBehavior = focusWindows ? "focus-captured-surface" : "no-focus-change";
+  }
+
+  if (focusBehavior !== undefined) {
+    const decisionAsString =
+      focusBehavior == "focus-captured-surface"
+        ? "Focusing the captured"
+        : "Not focusing the captured";
+    const surfaceAsString = surface == "broswer" ? "tab" : "window";
+    log(`${decisionAsString} ${surfaceAsString}.`);
+
+    controller.setFocusBehavior(focusBehavior);
   } else {
-    log("> Success! The captured surface was NOT focused.");
-    controller.setFocusBehavior("no-focus-change");
+    log("Screen cannot be focused - no action taken.");
   }
 }
 
-button1.onclick = async () => {
-  const shouldNeverFocus = () => false;
-  getDisplayMedia(shouldNeverFocus);
-};
-
-button2.onclick = async () => {
-  const shouldFocusIfTab = (track) => {
-    return track.getSettings().displaySurface == "browser";
-  };
-  getDisplayMedia(shouldFocusIfTab);
-};
-
-button3.onclick = async () => {
-  const shouldFocusIfWindow = (track) => {
-    return track.getSettings().displaySurface == "window";
-  };
-  getDisplayMedia(shouldFocusIfWindow);
+captureButton.onclick = async () => {
+  const focusTabs = document.getElementById("focusTabsCheckbox").checked;
+  const focusWindows = document.getElementById("focusWindowsCheckbox").checked;
+  getDisplayMedia(focusTabs, focusWindows);
 };
 
 /* Utils */
