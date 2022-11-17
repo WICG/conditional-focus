@@ -20,11 +20,9 @@ async function getDisplayMedia(focusTabs, focusWindows) {
 
   if (focusBehavior !== undefined) {
     const decisionAsString =
-      focusBehavior == "focus-captured-surface"
-        ? "Focusing the captured"
-        : "Not focusing the captured";
+      focusBehavior == "focus-captured-surface" ? "Focusing" : "Not focusing";
     const surfaceAsString = surface == "broswer" ? "tab" : "window";
-    log(`${decisionAsString} ${surfaceAsString}.`);
+    log(`${decisionAsString} the captured ${surfaceAsString}.`);
 
     controller.setFocusBehavior(focusBehavior);
   } else {
