@@ -37,6 +37,9 @@
       };
       if (!("CaptureController" in window && "setFocusBehavior" in CaptureController.prototype)) {
         logs.innerHTML += `<span>Warning! Conditional Focus is NOT supported. Try Chrome 109 on desktop.</span>\r\n`;
+        document.getElementById("captureButton").disabled = true;
+        document.getElementById("focusTabsCheckbox").disabled = true;
+        document.getElementById("focusWindowsCheckbox").disabled = true;
       }
     </script>
   </body>
