@@ -1,0 +1,41 @@
+body {
+  font-family: helvetica, arial, sans-serif;
+  margin: 2em;
+  height: 100vh;
+}
+
+h1 {
+  margin-block-end: 0;
+}
+
+body > a {
+  display: block;
+  margin-block-end: 1.4em;
+}
+
+video {
+  background: black;
+  width: 100%;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+button {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+#logs {
+  white-space: pre-wrap;
+}
+
+#logs span {
+  color: red;
+}
+
+@media screen and (min-width: 640px) {
+  body {
+    margin: 2em auto;
+    max-width: calc(640px - 2em);
+  }
+}

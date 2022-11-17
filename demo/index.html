@@ -1,80 +1,37 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="mobile-web-app-capable" content="no" />
-    <link rel="stylesheet" href="main.css" />
-    <link rel="icon" href="#" />
-    <title>Conditional Focus Demo</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Conditional Focus</title>
+
+    <link rel="stylesheet" href="index.css" />
+
+    <script src="index.js" defer></script>
   </head>
   <body>
-    <h1 style="text-align: center">Conditional Focus Demo</h1>
-    <div class="centerAligned">
-      <video id="video" autoplay style="border: solid; width: 50%"></video>
-    </div>
-    <div style="text-align: center">
-      <button
-        id="captureAndFocusButton"
-        onclick="onCaptureButtonClicked(true);"
-        style="background: #d00909; color: #fff"
-      >
-        Capture and Focus
-      </button>
-      <button
-        id="captureAndNoFocusButton"
-        onclick="onCaptureButtonClicked(false);"
-        style="background: #47a119; color: #fff"
-      >
-        Capture without Focus (NEW)
-      </button>
-      <div id="unfocusable_warning" style="display: none; padding: 1%">
-        <p>
-          Only tabs and windows are focusable. You seem to have chosen to share a screen. This
-          option won't do much in the context of this demo. Please try a tab or a window instead.
-        </p>
-      </div>
-    </div>
+    <h1>Conditional Focus</h1>
+    <a href="https://developer.chrome.com/docs/web-platform/conditional-focus/"
+      >https://developer.chrome.com/docs/web-platform/conditional-focus/</a
+    >
+
+    <video id="video" autoplay muted playsinline></video>
+    <button id="button1">Share your screen and retain focus</button>
+    <button id="button2">Share your screen and focus if a tab is captured</button>
+    <button id="button3">Share your screen and focus if a window is captured</button>
+    <pre id="logs"></pre>
+
     <script>
-      const video = document.getElementById("video");
-      const unfocusable_warning = document.getElementById("unfocusable_warning");
-      let stream; // Prevents garbage collection of the stream.
-
-      function reset() {
-        unfocusable_warning.style.display = "none";
-        video.style.display = "";
-
-        if (video.srcObject != null) {
-          video.srcObject.getVideoTracks()[0].stop();
-          video.srcObject = null;
-        }
-      }
-
-      async function onCaptureButtonClicked(shouldFocus) {
-        reset();
-
-        try {
-          const controller = new CaptureController();
-          stream = await navigator.mediaDevices.getDisplayMedia({
-            video: true,
-            audio: true,
-            controller,
-          });
-          const [track] = stream.getVideoTracks();
-
-          const focusableSurfaces = ["browser", "window"];
-          if (!focusableSurfaces.includes(track.getSettings().displaySurface)) {
-            unfocusable_warning.style.display = "";
-            video.style.display = "none";
-            track.stop();
-            return;
-          }
-
-          controller.setFocusBehavior(shouldFocus ? "focus-captured-surface" : "no-focus-change");
-        } catch (error) {
-          console.error(error);
-          return;
-        }
-
-        video.srcObject = stream;
+      window.onunhandledrejection = (event) => {
+        logs.innerHTML += `<span> > ${event.reason}</span>\r\n`;
+      };
+      window.onerror = (error) => {
+        logs.innerHTML += `<span> > ${error}</span>\r\n`;
+      };
+      if (!("CaptureController" in window && "setFocusBehavior" in CaptureController.prototype)) {
+        logs.innerHTML += `<span>Warning! Conditional Focus is NOT supported. Try Chrome 109 on desktop.</span>\r\n`;
       }
     </script>
   </body>
