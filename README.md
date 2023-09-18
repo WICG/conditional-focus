@@ -48,7 +48,7 @@ const surfaceType = track.getSettings().displaySurface;
 if (surfaceType == "browser") {
   controller.setFocusBehavior("focus-captured-surface");
 } else if (surfaceType == "window") {
-  controller.setFocusBehavior("no-focus-change");
+  controller.setFocusBehavior("focus-capturing-application");
 }
 ```
 
@@ -67,7 +67,7 @@ const stream = await navigator.mediaDevices.getDisplayMedia({
 const [track] = stream.getVideoTracks();
 if (track.getSettings().displaySurface == "browser" &&
     track.getCaptureHandle().origin == "https://some.specific.url") {
-  controller.setFocusBehavior("no-focus-change");
+  controller.setFocusBehavior("focus-capturing-application");
 } else {
   controller.setFocusBehavior("focus-captured-surface");
 }
