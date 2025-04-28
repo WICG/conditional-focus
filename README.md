@@ -1,3 +1,7 @@
+# Status of this specification
+
+The functionality added by this specification was added to the [Screen Capture specification](https://www.w3.org/TR/screen-capture/).
+
 # Conditional Focus
 
 ## Problem
