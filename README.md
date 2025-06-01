@@ -1,4 +1,6 @@
-# Status of this specification
+# Status of this specification (Archived)
+
+🚫 **This project is no longer maintained.**
 
 The functionality added by this specification was added to the [Screen Capture specification](https://www.w3.org/TR/screen-capture/).
 
